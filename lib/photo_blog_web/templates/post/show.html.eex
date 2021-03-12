@@ -1,0 +1,84 @@
+
+<p>
+  <%= if current_user_is?(@conn, @post.user_id) do %>
+    <span><%= link "Edit", to: Routes.post_path(@conn, :edit, @post) %></span>
+    <p>Shareable Link: <%= link "http://events.astrometer.site" <> Routes.post_path(@conn, :show, @post), to: Routes.post_path(@conn, :show, @post) %></p>
+  <% end %>
+</p>
+
+<%= if !have_current_user?(@conn) do %>
+<h1>Show Post</h1>
+<p>Title: <%= @post.title %></p>
+<p>Event Date: <%= @post.eventDate %></p>
+<p>Details: <%= @post.body %></p>
+<p><%= link "Register", to: Routes.user_path(@conn, :new) %> an account to comment or respond.</p>
+<% else %>
+
+  <h1>Show Post</h1>
+  <p>Title: <%= @post.title %></p>
+  <p>Event Date: <%= @post.eventDate %></p>
+  <p>Details: <%= @post.body %></p>
+
+  <%= if PhotoBlog.Invites.check_contains(@post.id, @conn.assigns[:current_user].id) do %>
+  <div>
+    <p>You're Invited!</p>
+    <%= button "Accept", to: Routes.invite_path(@conn, :update, PhotoBlog.Invites.get_invite_from_user(@conn.assigns[:current_user].id, @post.id)), class: "btn btn-primary" %>
+    <%= button "Reject", to: Routes.invite_path(@conn, :update, PhotoBlog.Invites.get_invite_from_user(@conn.assigns[:current_user].id, @post.id)), class: "btn btn-primary" %>
+    <%= button "Maybe", to: Routes.invite_path(@conn, :update, PhotoBlog.Invites.get_invite_from_user(@conn.assigns[:current_user].id, @post.id)), class: "btn btn-primary" %>
+  </div>
+  <% end %>
+
+  <h2>Add Comment</h2>
+
+
+
+  <%= if have_current_user?(@conn) do %>
+    <%= render(
+      PhotoBlogWeb.CommentView,
+      "form.html",
+      changeset: @new_comment,
+      action: Routes.comment_path(@conn, :create)
+    ) %>
+
+      <% end %>
+
+
+    <%= if current_user_is?(@conn, @post.user_id) do %>
+
+
+  <h2>Add Invite</h2>
+
+    <%= render(
+      PhotoBlogWeb.InviteView,
+      "form.html",
+      changeset: @new_invite,
+      action: Routes.invite_path(@conn, :create)
+    ) %>
+
+
+  <% end %>
+
+  <h2>Current Invites</h2>
+  <%= for invite <- @post.invites do %>
+    <div class="card">
+      <div class="card-body">
+        <p><%= invite.user.name %>: <%= invite.status %></p>
+      </div>
+    </div>
+  <% end %>
+
+
+  <h2>Comments</h2>
+
+  <%= for comm <- @post.comments do %>
+    <div class="card">
+      <div class="card-body">
+        <p>Posted by <%= comm.user.name %></p>
+        <p class="card-text"><%= comm.body %></p>
+        <%= if comm.user_id == @conn.assigns[:current_user].id or @conn.assigns[:current_user].id == @post.user_id do %>
+          <%= link "Delete", to: Routes.comment_path(@conn, :delete, comm), method: :delete, data: [confirm: "Are you sure?"] %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% end %>
