@@ -17,7 +17,7 @@ event.astrometer.art
 
 
 4. Is your app functionality complete? If not, what's missing?
-Comment images and Invite Accept/Reject/Maybe
+User Profile Pictures and Invite Accept/Reject/Maybe
 
 
 5. Is your app properly deployed? If not, what went wrong?
